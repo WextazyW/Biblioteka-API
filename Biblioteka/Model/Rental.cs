@@ -18,5 +18,6 @@ namespace Biblioteka.Model
         [Required]
         [ForeignKey("Books")]
         public int books_id { get; set; }
+        public string status_rental { get; set; }
     }
 }

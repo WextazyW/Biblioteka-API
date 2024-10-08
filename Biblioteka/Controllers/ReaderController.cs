@@ -97,5 +97,15 @@ namespace Biblioteka.Controllers
 
             return NoContent();
         }
+        [HttpGet("books")]
+        public async Task<ActionResult<Books>> GetBooksByReader(int id)
+        {
+            var book = await _context.Readers.FirstOrDefaultAsync(g => g.Id == id);
+            if (book == null)
+            {
+                return BadRequest($"not found book with id {id}");
+            }
+            return Ok(_context.Books.Where(i => i.Readers_id == id));
+        }
     }
 }
