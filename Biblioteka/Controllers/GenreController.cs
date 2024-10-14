@@ -1,4 +1,5 @@
 ﻿using Biblioteka.DataBaseContext;
+using Biblioteka.Interfaces;
 using Biblioteka.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,85 +13,35 @@ namespace Biblioteka.Controllers
     [Route("api/[controller]")]
     public class GenreController : Controller
     {
-        private readonly TestApiDb _context;
+        private readonly IGenreInterface _genreInterface;
 
-        public GenreController(TestApiDb context)
+        public GenreController(IGenreInterface genreInterface)
         {
-            _context = context;
+            _genreInterface = genreInterface;
         }
 
         [HttpGet]
         public async Task<ActionResult<Genre>> GetGenre()
         {
-            var genres = await _context.Genres.ToListAsync();
-            return Ok(genres); 
+            return await _genreInterface.GetGenre();
         }
 
         [HttpPost]
         public async Task<ActionResult<Genre>> PostBook([FromBody] Genre genre)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var validationResults = new List<ValidationResult>();
-            var isValid = Validator.TryValidateObject(genre, new ValidationContext(genre), validationResults);
-            if (!isValid)
-            {
-                return BadRequest(validationResults.Select(r => r.ErrorMessage).ToArray());
-            }
-
-            await _context.Genres.AddAsync(genre);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetGenre), new { id = genre.Id }, genre);
+            return await _genreInterface.PostBook(genre);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBook(int id, [FromBody] Genre genre)
         {
-            if (id != genre.Id)
-            {
-                return BadRequest(new { Message = "ID жанра не совпадает." });
-            }
-
-            _context.Entry(genre).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!GenreExists(id))
-                {
-                    return NotFound(new { Message = "Жанр не найден." });
-                }
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка при обновлении жанра.");
-            }
-
-            return NoContent();
-        }
-
-        private bool GenreExists(int id)
-        {
-            return _context.Genres.Any(e => e.Id == id);
+            return await _genreInterface.PutBook(id, genre);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGenre(int id)
         {
-            var genre = await _context.Genres.FindAsync(id);
-            if (genre == null)
-            {
-                return NotFound(new { Message = "Жанр не найден." });
-            }
-
-            _context.Genres.Remove(genre);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return await _genreInterface.DeleteGenre(id);
         }
     }
 }

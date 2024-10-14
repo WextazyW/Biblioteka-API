@@ -11,11 +11,12 @@ namespace Biblioteka.Model
         public string Author { get; set; } 
         public int PublicationYear { get; set; } 
         public string Description { get; set; } 
-        public int AvailableCopies { get; set; } 
+        public int? AvailableCopies { get; set; } 
 
         [Required]
-        [ForeignKey("Genres")]
+        [ForeignKey(nameof(Genre))]
         public int Genre_id { get; set; }
+        public Genre Genre { get; set; }
 
         [Required]
         [ForeignKey("Readers")]

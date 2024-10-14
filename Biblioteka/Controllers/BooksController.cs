@@ -1,8 +1,12 @@
-﻿using Biblioteka.DataBaseContext;
+﻿ using Biblioteka.DataBaseContext;
+using Biblioteka.Interfaces;
 using Biblioteka.Model;
+using Biblioteka.Requests;
+using Biblioteka.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Biblioteka.Controllers
 {
@@ -10,126 +14,59 @@ namespace Biblioteka.Controllers
     [Route("api/[controller]")]
     public class BooksController : Controller
     {
-        private readonly TestApiDb _context;
+        private readonly IBookInterface _bookService;
 
-        public BooksController(TestApiDb context)
+        public BooksController(IBookInterface bookService)
         {
-            _context = context;
+            _bookService = bookService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<Books>> GetBooks()
+        public async Task<ActionResult<Books>> GetBooks([FromQuery] string author, [FromQuery] string genre, [FromQuery] int? year, [FromQuery] int? page,[FromQuery] int? pageSize)
         {
-            var books = await _context.Books.ToListAsync();
-            return Ok(books); 
+            return await _bookService.GetBooks(author, genre, year, page, pageSize);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Books>> GetBook(int id)
         { 
-            var book = await _context.Books.FindAsync(id);
-            if (book == null)
-            {
-                return NotFound(new { Message = "Книга не найдена." });
-            }
-            return Ok(book); 
-        }   
+            return await _bookService.GetBook(id);
+        }
 
         [HttpGet("genre")]
         public async Task<ActionResult<Books>> GetBooksByGenre(int id)
         {
-            var genre = await _context.Genres.FirstOrDefaultAsync(g => g.Id == id);
-            if (genre == null)
-            {
-                return BadRequest($"not found genre with id {id}");
-            }
-            return Ok(_context.Books.Where(i => i.Genre_id == id));
+            return await _bookService.GetBooksByGenre(id);
         }
 
         [HttpGet("author")]
         public async Task<ActionResult<Books>> GetBookByAuthor(string author)
         {
-            var nameParts = author.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-            var books = await _context.Books.Where(i => nameParts.All(part => i.Author.ToLower().Contains(part))).ToListAsync();
-
-            return Ok(books);
+            return await _bookService.GetBookByAuthor(author); 
         }
 
         [HttpPost]
-        public async Task<ActionResult<Books>> PostBook([FromBody] Books book)
+        public async Task<IActionResult> AddNewBook(CreateBook book)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState); 
-            }
-
-            var validationResults = new List<ValidationResult>();
-            var isValid = Validator.TryValidateObject(book, new ValidationContext(book), validationResults);
-            if (!isValid)
-            {
-                return BadRequest(validationResults.Select(r => r.ErrorMessage).ToArray());
-            }
-
-            await _context.Books.AddAsync(book);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetBook), new { id = book.Id }, book);
+            return await _bookService.AddNewBook(book);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBook(int id, [FromBody] Books book)
         {
-            if (id != book.Id)
-            {
-                return BadRequest(new { Message = "ID книги не совпадает." });
-            }
-
-            _context.Entry(book).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BookExists(id))
-                {
-                    return NotFound(new { Message = "Книга не найдена." });
-                }
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка при обновлении книги.");
-            }
-
-            return NoContent(); 
+            return await _bookService.PutBook(id, book);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {
-
-            var book = await _context.Books.FindAsync(id);
-            if (book == null)
-            {
-                return NotFound(new { Message = "Книга не найдена." });
-            }
-
-            _context.Books.Remove(book);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool BookExists(int id)
-        {
-            return _context.Books.Any(e => e.Id == id);
+            return await _bookService.DeleteBook(id);
         }
 
         [HttpGet("{id}/availability")]
         public async Task<ActionResult<int>> GetAvailableCopies(int id)
         {
-            var book = await _context.Books.FindAsync(id);
-            if (book == null) return NotFound();
-            return book.AvailableCopies;
+            return await _bookService.GetAvailableCopies(id);
         }
     }
 }

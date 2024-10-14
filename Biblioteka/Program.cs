@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Biblioteka.DataBaseContext;
+using Biblioteka.Interfaces;
+using Biblioteka.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,9 +15,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<TestApiDb>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("TestDbString")), ServiceLifetime.Scoped);
 
+builder.Services.AddScoped<IBookInterface, BookService>();
+builder.Services.AddScoped<IGenreInterface, GenreService>();
+builder.Services.AddScoped<IReaderInterface, ReaderService>();
+builder.Services.AddScoped<IRentalInterface, RentalService>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

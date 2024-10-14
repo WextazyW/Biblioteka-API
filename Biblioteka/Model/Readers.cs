@@ -11,6 +11,7 @@ namespace Biblioteka.Model
         public string FirstName { get; set; } 
         public string LastName { get; set; } 
         public string ContactDetails { get; set; }
+        public DateTime RegistrationDate { get; set; }
 
     }
 }
