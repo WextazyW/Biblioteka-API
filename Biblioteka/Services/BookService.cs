@@ -4,6 +4,7 @@ using Biblioteka.Model;
 using Biblioteka.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Biblioteka.Services
 {
@@ -16,25 +17,31 @@ namespace Biblioteka.Services
             _context = context;
         }
 
-        public async Task<ActionResult<Books>> GetBooks([FromQuery] string author, [FromQuery] string genre, [FromQuery] int? year, [FromQuery] int? page, [FromQuery] int? pageSize)
+        public async Task<ActionResult<Books>> GetBooks([FromQuery] string? author, [FromQuery] string? genre, [FromQuery] int? year, [FromQuery] int? page, [FromQuery] int? pageSize)
         {
-            IQueryable<Books> query = _context.Books.Include(b => b.Genre);
+            //IQueryable<Books> query = _context.Books.Include(b => b.Genre);
+
+            var query = _context.Books.AsQueryable();
 
             if (!string.IsNullOrEmpty(author))
-                query = query.Where(b => b.Author.Contains(author));
+                query = query.Where(b => b.Author == author);
 
             if (!string.IsNullOrEmpty(genre))
-            {
                 query = query.Where(b => b.Genre.Name == genre);
-            }
 
             if (year.HasValue)
-                query = query.Where(b => b.PublicationYear == year.Value);
+                query = query.Where(b => b.PublicationYear == year);
 
             var totalItems = await query.CountAsync();
             var books = await query.Skip((int)((page - 1) * pageSize)).Take((int)pageSize).ToListAsync();
 
-            return new OkObjectResult(new { TotalItems = totalItems, Page = page, PageSize = pageSize, Items = books });
+            return new OkObjectResult(new
+            {
+                TotalItems = totalItems,
+                Page = page,
+                PageSize = pageSize,
+                Books = books
+            });
         }
 
         public async Task<ActionResult<Books>> GetBook(int id)

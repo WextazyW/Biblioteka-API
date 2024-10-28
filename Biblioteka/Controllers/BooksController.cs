@@ -22,7 +22,7 @@ namespace Biblioteka.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<Books>> GetBooks([FromQuery] string author, [FromQuery] string genre, [FromQuery] int? year, [FromQuery] int? page,[FromQuery] int? pageSize)
+        public async Task<ActionResult<Books>> GetBooks([FromQuery] string? author, [FromQuery] string? genre, [FromQuery] int? year, [FromQuery] int? page,[FromQuery] int? pageSize)
         {
             return await _bookService.GetBooks(author, genre, year, page, pageSize);
         }

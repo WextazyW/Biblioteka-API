@@ -31,23 +31,24 @@ namespace Biblioteka.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Author")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("AvailableCopies")
+                    b.Property<int?>("AvailableCopies")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Genre_id")
+                    b.Property<int?>("Genre_id")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<int>("PublicationYear")
                         .HasColumnType("int");
 
-                    b.Property<int>("Readers_id")
+                    b.Property<int?>("Readers_id")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -55,6 +56,8 @@ namespace Biblioteka.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Genre_id");
 
                     b.ToTable("Books");
                 });
@@ -76,6 +79,27 @@ namespace Biblioteka.Migrations
                     b.ToTable("Genres");
                 });
 
+            modelBuilder.Entity("Biblioteka.Model.Photo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Photos");
+                });
+
             modelBuilder.Entity("Biblioteka.Model.Readers", b =>
                 {
                     b.Property<int>("Id")
@@ -95,6 +119,9 @@ namespace Biblioteka.Migrations
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("RegistrationDate")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -124,9 +151,24 @@ namespace Biblioteka.Migrations
                     b.Property<int>("reader_id")
                         .HasColumnType("int");
 
+                    b.Property<string>("status_rental")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Rental");
+                });
+
+            modelBuilder.Entity("Biblioteka.Model.Books", b =>
+                {
+                    b.HasOne("Biblioteka.Model.Genre", "Genre")
+                        .WithMany()
+                        .HasForeignKey("Genre_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Genre");
                 });
 #pragma warning restore 612, 618
         }

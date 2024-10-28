@@ -19,6 +19,7 @@ builder.Services.AddScoped<IBookInterface, BookService>();
 builder.Services.AddScoped<IGenreInterface, GenreService>();
 builder.Services.AddScoped<IReaderInterface, ReaderService>();
 builder.Services.AddScoped<IRentalInterface, RentalService>();
+builder.Services.AddScoped<IPhotoInterface, PhotoService>();
 
 var app = builder.Build();
 

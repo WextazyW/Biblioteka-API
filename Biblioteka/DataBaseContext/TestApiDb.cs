@@ -14,5 +14,7 @@ namespace Biblioteka.DataBaseContext
         public DbSet<Readers> Readers { get; set; }
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Rental> Rental { get; set; }
+        public DbSet<Photo> Photos { get; set; }
+
     }
 }
